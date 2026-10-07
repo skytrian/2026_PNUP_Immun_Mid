@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-app-version="2026.10.08.02">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -283,6 +283,40 @@
 </footer>
 
 <div id="pikmin-container"></div>
+
+<script>
+/* 자동 캐시 갱신: 새 버전이 배포되면 캐시된 페이지를 감지해 최신 파일로 1회 자동 갱신합니다. */
+const APP_VERSION = "2026.10.08.02";
+const CACHE_CHECK_PARAM = "app_cache_check";
+
+(async function autoRefreshOnNewVersion() {
+    try {
+        const url = new URL(window.location.href);
+        const currentVersion = document.documentElement.getAttribute("data-app-version");
+        if (url.searchParams.has(CACHE_CHECK_PARAM)) return;
+
+        const checkUrl = new URL(window.location.href);
+        checkUrl.searchParams.set(CACHE_CHECK_PARAM, Date.now().toString());
+        const response = await fetch(checkUrl.toString(), {
+            cache: "no-store",
+            headers: { "Cache-Control": "no-cache" }
+        });
+        if (!response.ok) return;
+
+        const html = await response.text();
+        const match = html.match(/<html[^>]*data-app-version=["']([^"']+)["']/i);
+        const latestVersion = match ? match[1] : null;
+
+        if (latestVersion && currentVersion && latestVersion !== currentVersion) {
+            const freshUrl = new URL(window.location.href);
+            freshUrl.searchParams.set("v", latestVersion);
+            window.location.replace(freshUrl.toString());
+        }
+    } catch (error) {
+        console.warn("자동 캐시 갱신 확인 실패:", error);
+    }
+})();
+</script>
 
 <script>
 const quizData = [
