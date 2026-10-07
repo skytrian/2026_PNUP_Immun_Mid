@@ -296,7 +296,7 @@ const quizData = [
     { id: 7, ch: "Ch 1", type: "mc", q: "Q7. Which of the following represents the correct chronological sequence of an adaptive immune response?", opts: ["Differentiation → Antigen Recognition → Effector Function → Clonal Expansion", "Antigen Recognition → Clonal Expansion (Proliferation) → Differentiation → Effector Function & Memory Formation", "Clonal Expansion → Differentiation → Antigen Recognition → Memory Formation", "Effector Function → Antigen Recognition → Differentiation → Proliferation", "Memory Formation → Proliferation → Antigen Recognition → Differentiation"], ans: 1, exp: "적응면역 순서: 항원 인식(Recognition) → 클론성 증식(Clonal Expansion) → 분화(Differentiation) → 이펙터 기능 수행 및 기억 형성." },
     { id: 8, ch: "Ch 1", type: "mc", q: "Q8. Which of the following statements regarding humoral immunity is CORRECT?", opts: ["It is mediated primarily by CD8+ cytotoxic T lymphocytes that lyse intracellular virus-infected host cells.", "It is mediated by secreted antibodies produced by B cell lineage, defending against extracellular microbes and toxins.", "It relies exclusively on Pattern Recognition Receptors expressed on circulating monocytes.", "It cannot be passively transferred to a naive individual via serum or plasma.", "It functions only within the host nucleolus to degrade viral DNA."], ans: 1, exp: "체액성 면역은 B 세포에서 분비된 항체가 체액을 순환하며 세포 외 미생물 및 독소를 중화/제거하는 기전입니다." },
     { id: 9, ch: "Ch 2", type: "mc", q: "Q9. Which of the following descriptions regarding eosinophil granules is INCORRECT?", opts: ["Eosinophils contain specialized membrane-bound granules with a distinctive crystalloid core.", "The primary functional component of the crystalloid core is Major Basic Protein (MBP).", "Granules consist of amorphous non-crystalline structures filled predominantly with major acidic proteins.", "Eosinophil peroxidase (EPO) is localized within the granule matrix surrounding the core.", "Granule contents are released into the extracellular space to eliminate large helminthic parasites."], ans: 2, exp: "호산구 과립 내부에는 결정형 코어(Crystalloid core)가 존재하며 주요 성분은 강염기성 단백질인 MBP입니다. 'Amorphous' 및 'Acidic'은 오답입니다." },
-    { id: 10, ch: "Ch 2", type: "mc", graph: "cd3cd19", q: "Q10. The following two-color flow-cytometry plot uses CD3 on the X-axis and CD19 on the Y-axis. Which quadrant contains the mature T-cell population?", opts: ["Q1: CD3− CD19+", "Q2: CD3+ CD19+", "Q3: CD3− CD19−", "Q4: CD3+ CD19−", "Q1 + Q2"], ans: 3, exp: "CD3는 T-cell marker이고 CD19는 B-cell marker입니다. 따라서 mature T cells는 CD3+ CD19−인 우하단 Q4에 위치합니다." },
+    { id: 10, ch: "Ch 2", type: "mc", graph: "cd3cd4", q: "Q10. The following two-color flow-cytometry dot plot uses CD3 on the X-axis and CD4 on the Y-axis. Which quadrant best represents CD3⁺ CD4⁺ helper T cells?", opts: ["Q1: CD3− CD4+", "Q2: CD3+ CD4+", "Q3: CD3− CD4−", "Q4: CD3+ CD4−", "Q1 + Q2"], ans: 1, exp: "유세포 분석에서 점 하나는 세포 1개를 의미합니다. CD3는 모든 T 세포의 공통 표지자이며, CD3⁺ CD4⁺ 세포는 대표적인 도움 T 세포(Helper T cell, TH)입니다. 따라서 X축 CD3와 Y축 CD4가 모두 양성인 우상단 Q2가 정답입니다. 성숙 T 세포는 일반적으로 CD4 또는 CD8 중 하나를 발현하는 Single Positive 상태이므로, CD3⁺ CD4⁺는 CD4⁺ helper T-cell population을 나타냅니다." },
     { id: 11, ch: "Ch 5", type: "mc", q: "Q11. What condition increases the overall avidity of an antibody-antigen interaction without altering the intrinsic single-site affinity of individual binding sites?", opts: ["Cleavage of the antibody into monovalent Fab fragments by papain.", "Multivalency of both the antigen and the antibody interaction sites.", "Point mutations occurring exclusively within the heavy chain C region.", "Transition from pentameric IgM to monomeric IgG.", "Decreasing the total number of antigen-binding sites on the antibody molecule."], ans: 1, exp: "개별 결합 부위 친화도(Affinity) 변화 없이 전체 결합력을 높이려면 항원과 항체가 다가 결합(Multivalency)을 형성하여 Avidity를 올려야 합니다." },
     { id: 12, ch: "Ch 4", type: "mc", q: "Q12. Which of the following pairs correctly matches the Pattern Recognition Receptor (PRR) with its sub-cellular localization for ligand recognition?", opts: ["TLR3, TLR7, TLR8, TLR9 – Endosomes", "TLR4 – Nucleolus", "RIG-like Receptors (RLRs) – Extracellular matrix", "NOD-like Receptors (NLRs) – Outer mitochondrial membrane", "Mannose-Binding Lectin (MBL) – Host cell cytosol"], ans: 0, exp: "핵산을 인지하는 TLR3, 7, 8, 9 수용체는 세포 내 엔도좀(Endosomal membrane)에 존재합니다." },
     { id: 13, ch: "Ch 2", type: "mc", q: "Q13. Which of the following lists consists entirely of secondary lymphoid organs?", opts: ["Bone marrow and Thymus", "Lymph nodes, Spleen, and Mucosal-Associated Lymphoid Tissue (MALT)", "Thymus, Spleen, and Bone marrow", "Liver, Fetal Yolk sac, and Thymus", "Kidney, Thyroid, and Lymph nodes"], ans: 1, exp: "2차 림프기관은 림프절, 비장, MALT 등입니다. 골수와 흉선은 1차 림프기관입니다." },
@@ -362,15 +362,20 @@ function resetToStart() {
 }
 
 function renderFlowPlot(kind) {
-    const axes = kind === 'cd3cd19'
-        ? { x: 'CD3', y: 'CD19', target: 'Q4' }
+    const axes = kind === 'cd3cd4'
+        ? { x: 'CD3', y: 'CD4', target: 'Q2' }
         : { x: 'CD11b', y: 'Ly6G', target: 'Q2' };
 
-    const points = [
-        [305,70],[330,82],[350,95],[315,105],[372,115],[345,130],[320,145],
-        [290,165],[350,180],[375,195],[300,205],[335,220],[365,235],
-        [255,250],[280,265],[390,150],[405,180]
-    ];
+    const points = kind === 'cd3cd4'
+        ? [
+            [275,65],[295,78],[320,88],[345,72],[365,95],[300,105],[335,112],
+            [355,125],[285,92],[375,110],[315,125],[345,98],[325,70],[365,82]
+        ]
+        : [
+            [305,70],[330,82],[350,95],[315,105],[372,115],[345,130],[320,145],
+            [290,165],[350,180],[375,195],[300,205],[335,220],[365,235],
+            [255,250],[280,265],[390,150],[405,180]
+        ];
 
     return `
         <div class="flow-plot" aria-label="Four-quadrant flow cytometry plot">
