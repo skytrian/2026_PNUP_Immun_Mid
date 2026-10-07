@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>2026학년도 대비 면역학(Ch 1~5) 정밀 모의고사 및 취약점 분석</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #cbd5e1;
+            --success: #16a34a;
+            --error: #dc2626;
+            --warning: #d97706;
+            --gemini-purple: #8b5cf6;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body { 
+            background-color: var(--bg); 
+            color: var(--text); 
+            line-height: 1.6; 
+            padding: 16px; 
+            max-width: 900px; 
+            margin: 0 auto; 
+            position: relative; 
+            overflow-x: hidden; 
+            min-height: 100vh; 
+        }
+        
+        header { 
+            background: linear-gradient(135deg, #1e3a8a, #2563eb); 
+            color: white; 
+            padding: 24px 20px; 
+            border-radius: 16px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); 
+        }
+        header h1 { font-size: 1.5rem; margin-bottom: 6px; }
+        header p { color: #93c5fd; font-size: 0.9rem; }
+
+        .btn-mode {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            margin-bottom: 12px;
+            background-color: white;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+        .btn-mode:active, .btn-mode:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .card { 
+            background: var(--card-bg); 
+            border-radius: 12px; 
+            padding: 18px; 
+            margin-bottom: 16px; 
+            border: 1px solid var(--border); 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02); 
+        }
+        .q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .q-tag { background: #eff6ff; color: var(--primary); font-weight: 600; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; border: 1px solid #bfdbfe; }
+        .q-title { font-weight: 600; font-size: 1rem; margin-bottom: 14px; color: #1e293b; word-break: break-word; }
+        
+        .options { display: flex; flex-direction: column; gap: 8px; }
+        .option-label { 
+            display: flex; 
+            align-items: flex-start; 
+            padding: 12px 14px; 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            cursor: pointer; 
+            transition: background 0.2s; 
+            font-size: 0.95rem; 
+            -webkit-appearance: none;
+        }
+        .option-label:active { background-color: #e2e8f0; }
+        .option-label input { margin-top: 3px; margin-right: 12px; }
+
+        .input-sa { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            font-size: 1rem; 
+            margin-top: 8px; 
+            -webkit-appearance: none;
+        }
+        .input-sa:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+
+        .btn-submit { 
+            display: block; 
+            width: 100%; 
+            padding: 16px; 
+            background-color: var(--primary); 
+            color: white; 
+            font-weight: 700; 
+            font-size: 1.05rem; 
+            border: none; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            transition: background 0.2s; 
+            box-shadow: 0 4px 6px -1px rgba(37,99,235,0.2); 
+            -webkit-appearance: none;
+        }
+        .btn-submit:active { opacity: 0.85; }
+        .btn-gemini { background-color: var(--gemini-purple); }
+
+        .tab-group { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+        .tab-btn { padding: 8px 14px; border-radius: 20px; border: 1px solid var(--border); background: white; font-weight: 600; cursor: pointer; font-size: 0.85rem; -webkit-appearance: none; }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        #start-section, #exam-form, #result-section { display: none; }
+
+        .score-banner { text-align: center; padding: 20px; background: white; border-radius: 16px; border: 2px solid var(--primary); margin-bottom: 20px; }
+        .score-num { font-size: 2.8rem; font-weight: 800; color: var(--primary); margin: 6px 0; }
+        
+        .analysis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        .ch-card { background: white; padding: 12px; border-radius: 10px; border: 1px solid var(--border); text-align: center; }
+        .ch-card.weak { border-color: var(--error); background-color: #fef2f2; }
+        .ch-name { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
+        .ch-score { font-size: 1.2rem; font-weight: 700; }
+
+        .explanation-box { margin-top: 10px; padding: 12px; background-color: #f8fafc; border-left: 4px solid var(--primary); border-radius: 0 8px 8px 0; font-size: 0.9rem; color: #334155; }
+        .status-badge { font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; }
+        .status-correct { background: #dcfce7; color: var(--success); }
+        .status-wrong { background: #fee2e2; color: var(--error); }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px 0 10px 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        #pikmin-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 120px;
+            pointer-events: none;
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        .pikmin {
+            position: absolute;
+            bottom: -80px;
+            width: 50px;
+            height: 70px;
+            animation: sproutAndWalk 6s linear forwards;
+            -webkit-animation: sproutAndWalk 6s linear forwards;
+        }
+
+        .pikmin-bubble {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            -webkit-transform: translateX(-50%);
+            background: white;
+            border: 1px solid #cbd5e1;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        @keyframes sproutAndWalk {
+            0% { bottom: -80px; opacity: 0; }
+            15% { bottom: 10px; opacity: 1; }
+            85% { bottom: 10px; opacity: 1; }
+            100% { bottom: 10px; left: 100%; opacity: 0; }
+        }
+        @-webkit-keyframes sproutAndWalk {
+            0% { bottom: -80px; opacity: 0; }
+            15% { bottom: 10px; opacity: 1; }
+            85% { bottom: 10px; opacity: 1; }
+            100% { bottom: 10px; left: 100%; opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>2026 면역학(Ch 1~5) 정밀 모의고사</h1>
+    <p>실전 채점 시스템 &amp; AI 오답 분석 연동 웹앱</p>
+</header>
+
+<!-- 시작 화면: 학습 모드 선택 -->
+<div id="start-section" style="display: block;">
+    <div class="card">
+        <h2 style="font-size: 1.2rem; margin-bottom: 12px; color: var(--primary-dark);">🚀 학습 모드를 선택하세요</h2>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px;">
+            원하는 시험 응시 방식을 선택해 주세요.
+        </p>
+
+        <button class="btn-mode" onclick="startExam('all')">
+            🎯 <strong>통합 실전 모의고사 세트</strong>
+            <div style="font-size:0.8rem; font-weight:normal; margin-top:4px;">Ch 1 ~ Ch 5 전체 43문항 (실전 중간고사 대비)</div>
+        </button>
+
+        <div style="margin-top: 24px;">
+            <h3 style="font-size: 1rem; margin-bottom: 10px; color: var(--text);">📚 Chapter별 선택 연습</h3>
+            <button class="btn-mode" onclick="startExam('Ch 1')">Ch 1. Overview of Immunology (8문항)</button>
+            <button class="btn-mode" onclick="startExam('Ch 2')">Ch 2. Cells &amp; Tissues of the Immune System (9문항)</button>
+            <button class="btn-mode" onclick="startExam('Ch 3')">Ch 3. Leukocyte Circulation &amp; Trafficking (5문항)</button>
+            <button class="btn-mode" onclick="startExam('Ch 4')">Ch 4. Innate Immunity (11문항)</button>
+            <button class="btn-mode" onclick="startExam('Ch 5')">Ch 5. Antibodies, Effector Functions &amp; Techniques (10문항)</button>
+        </div>
+    </div>
+</div>
+
+<!-- 시험 진행 화면 -->
+<div id="exam-form">
+    <div id="questions-container"></div>
+    <button class="btn-submit" onclick="gradeExam()">시험 제출 및 자동 채점하기</button>
+</div>
+
+<!-- 채점 및 결과 화면 -->
+<div id="result-section">
+    <div class="score-banner">
+        <h2>최종 평가 결과</h2>
+        <div class="score-num" id="total-score">0 / 100점</div>
+        <p id="pass-status" style="font-size: 1rem; font-weight: 600;"></p>
+        
+        <div style="margin-top: 16px;">
+            <button class="btn-submit btn-gemini" onclick="copyGeminiPrompt()">
+                ✨ Gemini용 1:1 오답 분석 프롬프트 복사하기
+            </button>
+        </div>
+    </div>
+
+    <h3 style="margin-bottom: 12px;">📊 Chapter별 성취도 분석</h3>
+    <div class="analysis-grid" id="chapter-analysis"></div>
+
+    <h3 style="margin-bottom: 10px;">📝 문항별 정밀 해설 및 오답 노트</h3>
+    <div class="tab-group">
+        <button class="tab-btn active" id="tab-all" onclick="filterReview('all')">전체 보기</button>
+        <button class="tab-btn" id="tab-wrong" onclick="filterReview('wrong')">오답 보기</button>
+        <button class="tab-btn" id="tab-correct" onclick="filterReview('correct')">정답 보기</button>
+    </div>
+    
+    <div id="review-questions-container"></div>
+    
+    <button class="btn-submit" onclick="resetToStart()" style="margin-top: 16px; background-color: #475569;">시작 화면으로 돌아가기</button>
+</div>
+
+<footer onclick="triggerPikminEasterEgg()">
+    부산대학교 약학대학 김민성 제작 🌱 <span style="font-size:0.75rem; opacity:0.7;">(클릭해보세요!)</span>
+</footer>
+
+<div id="pikmin-container"></div>
+
+<script>
+const quizData = [
+    // Part I. Multiple Choice Questions (Q1 ~ Q32)
+    { id: 1, ch: "Ch 4", type: "mc", q: "Q1. Which of the following statements correctly describes Pattern Recognition Receptors (PRRs) in the innate immune system?", opts: ["PRRs are generated via somatic V(D)J gene recombination in precursor cells.", "PRRs recognize both pathogen-associated molecular patterns (PAMPs) and host damage-associated molecular patterns (DAMPs).", "PRRs are localized exclusively on the outer plasma membrane of mature B lymphocytes.", "PRRs undergo hypermutation to recognize highly variable structural variants of mutated viruses.", "PRRs trigger signaling cascades that selectively inhibit all host inflammatory cytokine production."], ans: 1, exp: "선천면역 수용체(PRR)는 병원체 표면의 보존된 PAMPs뿐만 아니라, 세포 손상 시 유출되는 자가 분자인 DAMPs를 모두 인지하여 염증 반응을 유발합니다." },
+    { id: 2, ch: "Ch 1", type: "mc", q: "Q2. During a secondary immune response to a previously encountered protein antigen, which parameter uniquely distinguishes adaptive immunological memory from a primary response?", opts: ["The response relies exclusively on germline-encoded pattern recognition receptors.", "The speed of the response is delayed due to required somatic gene rearrangement.", "The magnitude of antibody production is significantly higher, accompanied by increased binding affinity.", "Memory B lymphocytes undergo rapid apoptosis upon re-encountering the specific antigen.", "The secondary response produces only low-affinity IgM monomers."], ans: 2, exp: "2차 적응면역 반응은 면역 기억(Memory) 및 친화도 성숙(Affinity maturation)에 의해 1차 반응보다 항체 생성량(Magnitude)이 비약적으로 증가하고 결합 친화도(Affinity)가 상승합니다." },
+    { id: 3, ch: "Ch 1", type: "mc", q: "Q3. Adaptive immunity possesses several cardinal features that distinguish it from innate defense mechanisms. Which of the following statements correctly describes one of these fundamental features?", opts: ["Diversity in antigen recognition is achieved through germline inheritance of millions of distinct receptor genes.", "Self-tolerance prevents immune responses against host tissues by eliminating or inactivating self-reactive lymphocyte clones.", "Clonal expansion decreases the total number of antigen-specific lymphocytes during an active infection.", "Immunological memory ensures that secondary responses are slower but more non-specific than primary responses.", "Specialized antigen recognition allows a single T lymphocyte to express thousands of distinct TCR specificities simultaneously."], ans: 1, exp: "자가관용(Self-tolerance)은 자가 반응성 림프구 클론을 제거하거나 비활성화하여 자가 조직 공격을 방지합니다." },
+    { id: 4, ch: "Ch 1", type: "mc", q: "Q4. Which statement correctly characterizes active immunity?", opts: ["Active immunity is conferred by the transfer of pre-formed serum antibodies from an immune donor.", "Active immunity is acquired when an individual's own immune system responds directly to an antigenic challenge.", "Active immunity provides immediate, full protection within minutes without requiring lymphocyte activation.", "Active immunity occurs during the passive transport of maternal IgG across the placenta via FcRn.", "Active immunity fails to generate long-lived memory T or B lymphocytes."], ans: 1, exp: "능동면역(Active immunity)은 개체가 항원에 직접 노출되어 스스로 T/B 림프구를 활성화하고 기억 세포를 형성하며 획득됩니다." },
+    { id: 5, ch: "Ch 1", type: "mc", q: "Q5. Which of the following cell types uniquely possesses antigen receptors generated by somatic V(D)J gene rearrangement, allowing for specific antigen recognition?", opts: ["Neutrophils and Macrophages", "Natural Killer (NK) cells and Innate Lymphoid Cells (ILCs)", "B lymphocytes and T lymphocytes", "Dendritic cells and Basophils", "Eosinophils and Mast cells"], ans: 2, exp: "V(D)J 체세포 유전자 재조합을 거쳐 고유한 항원 수용체(BCR, TCR)를 발현하는 세포는 B/T 림프구가 유일합니다." },
+    { id: 6, ch: "Ch 2", type: "mc", q: "Q6. Which Antigen-Presenting Cell (APC) is uniquely capable of activating (priming) naive T lymphocytes?", opts: ["Tissue-resident Macrophage", "Mature Dendritic Cell", "Follicular B Cell", "Segmented Neutrophil", "Eosinophil"], ans: 1, exp: "성숙 수지상세포(Mature DC)는 높은 수준의 MHC 및 B7 공자극 분자를 발현하여 Naive T cell을 활성화(Priming)시키는 독보적인 전문 APC입니다." },
+    { id: 7, ch: "Ch 1", type: "mc", q: "Q7. Which of the following represents the correct chronological sequence of an adaptive immune response?", opts: ["Differentiation → Antigen Recognition → Effector Function → Clonal Expansion", "Antigen Recognition → Clonal Expansion (Proliferation) → Differentiation → Effector Function & Memory Formation", "Clonal Expansion → Differentiation → Antigen Recognition → Memory Formation", "Effector Function → Antigen Recognition → Differentiation → Proliferation", "Memory Formation → Proliferation → Antigen Recognition → Differentiation"], ans: 1, exp: "적응면역 순서: 항원 인식(Recognition) → 클론성 증식(Clonal Expansion) → 분화(Differentiation) → 이펙터 기능 수행 및 기억 형성." },
+    { id: 8, ch: "Ch 1", type: "mc", q: "Q8. Which of the following statements regarding humoral immunity is CORRECT?", opts: ["It is mediated primarily by CD8+ cytotoxic T lymphocytes that lyse intracellular virus-infected host cells.", "It is mediated by secreted antibodies produced by B cell lineage, defending against extracellular microbes and toxins.", "It relies exclusively on Pattern Recognition Receptors expressed on circulating monocytes.", "It cannot be passively transferred to a naive individual via serum or plasma.", "It functions only within the host nucleolus to degrade viral DNA."], ans: 1, exp: "체액성 면역은 B 세포에서 분비된 항체가 체액을 순환하며 세포 외 미생물 및 독소를 중화/제거하는 기전입니다." },
+    { id: 9, ch: "Ch 2", type: "mc", q: "Q9. Which of the following descriptions regarding eosinophil granules is INCORRECT?", opts: ["Eosinophils contain specialized membrane-bound granules with a distinctive crystalloid core.", "The primary functional component of the crystalloid core is Major Basic Protein (MBP).", "Granules consist of amorphous non-crystalline structures filled predominantly with major acidic proteins.", "Eosinophil peroxidase (EPO) is localized within the granule matrix surrounding the core.", "Granule contents are released into the extracellular space to eliminate large helminthic parasites."], ans: 2, exp: "호산구 과립 내부에는 결정형 코어(Crystalloid core)가 존재하며 주요 성분은 강염기성 단백질인 MBP입니다. 'Amorphous' 및 'Acidic'은 오답입니다." },
+    { id: 10, ch: "Ch 2", type: "mc", q: "Q10. A researcher performs two-color flow cytometry on single-cell suspensions derived from secondary lymphoid tissue using fluorophore-conjugated antibodies against CD3 (T cell marker, X-axis) and CD19 (B cell marker, Y-axis). A standard four-quadrant gating plot (Q1: upper-left, Q2: upper-right, Q3: lower-left, Q4: lower-right) is generated. Which quadrant must be analyzed to quantify the population of mature T cells?", opts: ["Quadrant 1 (CD3- CD19+)", "Quadrant 2 (CD3+ CD19+)", "Quadrant 3 (CD3- CD19-)", "Quadrant 4 (CD3+ CD19-)", "Quadrants 1 and 2 combined"], ans: 3, exp: "성숙 T 세포는 CD3+ CD19- 이어야 하므로 X축 양성, Y축 음성 구역인 Quadrant 4 (Q4)에 위치합니다." },
+    { id: 11, ch: "Ch 5", type: "mc", q: "Q11. What condition increases the overall avidity of an antibody-antigen interaction without altering the intrinsic single-site affinity of individual binding sites?", opts: ["Cleavage of the antibody into monovalent Fab fragments by papain.", "Multivalency of both the antigen and the antibody interaction sites.", "Point mutations occurring exclusively within the heavy chain C region.", "Transition from pentameric IgM to monomeric IgG.", "Decreasing the total number of antigen-binding sites on the antibody molecule."], ans: 1, exp: "개별 결합 부위 친화도(Affinity) 변화 없이 전체 결합력을 높이려면 항원과 항체가 다가 결합(Multivalency)을 형성하여 Avidity를 올려야 합니다." },
+    { id: 12, ch: "Ch 4", type: "mc", q: "Q12. Which of the following pairs correctly matches the Pattern Recognition Receptor (PRR) with its sub-cellular localization for ligand recognition?", opts: ["TLR3, TLR7, TLR8, TLR9 – Endosomes", "TLR4 – Nucleolus", "RIG-like Receptors (RLRs) – Extracellular matrix", "NOD-like Receptors (NLRs) – Outer mitochondrial membrane", "Mannose-Binding Lectin (MBL) – Host cell cytosol"], ans: 0, exp: "핵산을 인지하는 TLR3, 7, 8, 9 수용체는 세포 내 엔도좀(Endosomal membrane)에 존재합니다." },
+    { id: 13, ch: "Ch 2", type: "mc", q: "Q13. Which of the following lists consists entirely of secondary lymphoid organs?", opts: ["Bone marrow and Thymus", "Lymph nodes, Spleen, and Mucosal-Associated Lymphoid Tissue (MALT)", "Thymus, Spleen, and Bone marrow", "Liver, Fetal Yolk sac, and Thymus", "Kidney, Thyroid, and Lymph nodes"], ans: 1, exp: "2차 림프기관은 림프절, 비장, MALT 등입니다. 골수와 흉선은 1차 림프기관입니다." },
+    { id: 14, ch: "Ch 2", type: "mc", q: "Q14. How do microbial antigens originating in peripheral tissues primarily enter local lymph nodes?", opts: ["Via high endothelial venules (HEVs) in soluble form.", "Via efferent lymphatic vessels carried by red blood cells.", "Via afferent lymphatic vessels either in soluble form or transported by dendritic cells.", "Via the central artery directly into the periarteriolar lymphoid sheath.", "Via direct diffusion through skin epidermal basolamina into bone marrow."], ans: 2, exp: "말초 항원은 들림프관(Afferent lymphatic vessels)을 통해 수용성 형태 또는 수지상세포(DC)에 실려 림프절로 유입됩니다." },
+    { id: 15, ch: "Ch 2", type: "mc", q: "Q15. Which statement correctly distinguishes the physiological antigen-filtering function of the spleen from that of lymph nodes?", opts: ["The spleen filters tissue-derived lymph, whereas lymph nodes filter circulating blood.", "The spleen filters blood-borne antigens, whereas lymph nodes filter antigens collected from lymph draining infected tissues.", "Lymph nodes lack T cell zones, whereas the spleen lacks B cell follicles.", "The spleen receives antigens exclusively through afferent lymphatics.", "Lymph nodes filter systemic blood directly through red pulp sinusoids."], ans: 1, exp: "림프절은 국소 조직의 림프액(Lymph)을 여과하고, 비장은 혈류를 순환하는 혈액 매개(Blood-borne) 항원을 직접 여과합니다." },
+    { id: 16, ch: "Ch 3", type: "mc", q: "Q16. What molecular event is required to convert leukocyte integrins (such as LFA-1) from a low-affinity state to a high-affinity state during extravasation?", opts: ["Binding of P-selectin to sialylated Lewis X carbohydrates.", "Inside-out signaling triggered by chemokine receptor engagement on the leukocyte.", "Cleavage of the integrin beta chain by matrix metalloproteinases.", "Downregulation of ICAM-1 expression on inflamed endothelial cells.", "Engagement of CD32 Fc receptors by monomeric IgG."], ans: 1, exp: "케모카인이 백혈구의 케모카인 수용체와 결합하면 세포 내 Inside-out signaling을 유도하여 Integrin을 고친화성 구조로 변화시킵니다." },
+    { id: 17, ch: "Ch 3", type: "mc", q: "Q17. Which of the following correctly orders the sequential steps of leukocyte extravasation at sites of inflammation?", opts: ["Firm Adhesion → Rolling → Integrin Activation → Transmigration", "Rolling → Integrin Activation → Firm Adhesion → Transmigration", "Integrin Activation → Transmigration → Rolling → Firm Adhesion", "Transmigration → Rolling → Firm Adhesion → Integrin Activation", "Rolling → Firm Adhesion → Transmigration → Integrin Activation"], ans: 1, exp: "백혈구 유입 4단계: Rolling(약한 구르기) → Integrin Activation(케모카인 신호) → Firm Adhesion(견고한 부착) → Transmigration(내피 통과)." },
+    { id: 18, ch: "Ch 3", type: "mc", q: "Q18. Which statement correctly describes the cellular expression patterns of selectins involved in leukocyte rolling?", opts: ["L-selectin is expressed on inflamed endothelial cells; P-selectin is expressed on naive T cells.", "P-selectin and E-selectin are expressed on activated endothelial cells; L-selectin is expressed on circulating leukocytes.", "E-selectin is expressed exclusively on neutrophils; L-selectin is expressed on erythrocytes.", "All selectins are expressed exclusively inside cytoplasmic azurophilic granules.", "Selectins bind with high affinity to intracellular cytokeratins."], ans: 1, exp: "P/E-selectin은 활성화된 혈관 내피세포 표면에, L-selectin은 순환하는 백혈구 표면에 발현됩니다." },
+    { id: 19, ch: "Ch 3", type: "mc", q: "Q19. Which molecular interaction directly mediates the firm adhesion step of leukocytes to endothelial cells during acute inflammation?", opts: ["L-selectin binding to GlyCAM-1", "Integrins (e.g., LFA-1, VLA-4) binding to endothelial Ig superfamily ligands (e.g., ICAM-1, VCAM-1)", "P-selectin binding to PSGL-1 under low shear force", "Chemokine binding to extracellular glycosaminoglycans", "Defensin peptides inserting into endothelial cell membranes"], ans: 1, exp: "Firm adhesion 단계는 고친화성 Integrin(LFA-1, VLA-4)이 내피세포의 ICAM-1, VCAM-1과 결합하여 형성됩니다." },
+    { id: 20, ch: "Ch 4", type: "mc", q: "Q20. Which anti-inflammatory cytokine acts as a key negative regulator of innate immunity by suppressing the activation and cytokine production of macrophages and dendritic cells?", opts: ["Tumor Necrosis Factor-α (TNF-α)", "Interleukin-1β (IL-1β)", "Interleukin-10 (IL-10)", "Interleukin-6 (IL-6)", "Interleukin-12 (IL-12)"], ans: 2, exp: "IL-10은 대식세포 및 수지상세포의 활성을 억제하는 대표적인 항염증성(Anti-inflammatory) 사이토카인입니다." },
+    { id: 21, ch: "Ch 4", type: "mc", q: "Q21. According to the 'missing-self' hypothesis, how is the cytotoxic activity of Natural Killer (NK) cells regulated by target cell surface molecules?", opts: ["Expression of self MHC Class I molecules engages NK inhibitory receptors, preventing killing of normal cells.", "Upregulation of self MHC Class I molecules directly triggers NK cell degranulation.", "Absence of TLR4 on target cells induces NK cell-mediated apoptosis.", "Binding of target cell IgE to NK cell Fc receptors inhibits cytotoxicity.", "Expression of CD4 on target cells marks them for immediate destruction by NK cells."], ans: 0, exp: "Missing-self 가설: 정상 세포의 자가 MHC Class I 분자가 NK 세포의 억제 수용체(Inhibitory receptor)를 자극하여 살해 작용을 억제합니다." },
+    { id: 22, ch: "Ch 2", type: "mc", q: "Q22. To precisely identify and isolate mouse neutrophils from a single-cell suspension using flow cytometry, which set of cell surface markers is most commonly used?", opts: ["CD3 and CD19", "CD11b and Ly6G", "CD4 and CD8", "NK1.1 and CD56", "CD14 and HLA-DR"], ans: 1, exp: "생쥐 모델 유세포 분석에서 호중구 식별을 위한 대표적인 마커 조합은 CD11b와 Ly6G입니다." },
+    { id: 23, ch: "Ch 4", type: "mc", q: "Q23. Which of the following functions as a systemic humoral defense factor rather than a component of the local epithelial barrier defense?", opts: ["Defensins", "Cathelicidins", "Intraepithelial lymphocytes (IELs)", "Systemic IgG antibodies", "Mucosal secretory IgA"], ans: 3, exp: "전신 순환 IgG(Systemic IgG)는 체액성 적응면역 인자로, 국소 상피 장벽 구성 요소에 속하지 않습니다." },
+    { id: 24, ch: "Ch 5", type: "mc", q: "Q24. What is the relationship in antigen-binding specificity between a membrane-bound immunoglobulin (mIg) on a naive B cell and the antibody secreted by its progeny plasma cell?", opts: ["Secreted antibodies have completely different Variable (V) regions and recognize unrelated epitopes.", "Secreted antibodies retain exactly the same antigen-binding specificity as the original membrane-bound receptor.", "Membrane-bound immunoglobulins recognize only lipids, whereas secreted antibodies recognize only nucleic acids.", "Secreted antibodies lose all antigen-binding sites and act solely as signaling cytokines.", "The V region of the secreted antibody is replaced by T-cell receptor domain sequences."], ans: 1, exp: "B 세포가 분비형 항체로 전환되어도 가변 영역(VH, VL) 유전자 조합은 동일하므로 항원 결합 특이성(Specificity)은 완벽히 보존됩니다." },
+    { id: 25, ch: "Ch 5", type: "mc", q: "Q25. What rule governs the light chain composition of an individual immunoglobulin molecule?", opts: ["A single antibody molecule contains one kappa (κ) light chain and one lambda (λ) light chain.", "Both light chains within a single antibody molecule are identical, being either both kappa or both lambda.", "Light chains are found only in secreted IgA pentamers.", "The isotype of the light chain changes randomly during secondary immune responses.", "Light chains determine whether an antibody functions as an opsonin or a neutralizing factor."], ans: 1, exp: "단일 항체 분자 내 2개의 Light chain은 반드시 동일한 Isotype(둘 다 kappa 또는 둘 다 lambda)으로 구성됩니다." },
+    { id: 26, ch: "Ch 5", type: "mc", q: "Q26. Which structural domain of an antibody molecule primarily mediates effector functions such as complement activation and Fc receptor binding?", opts: ["Heavy chain Variable (VH) domain", "Light chain Variable (VL) domain", "Heavy chain Constant (CH) region", "Light chain Constant (CL) domain", "Complementarity-Determining Region 3 (CDR3)"], ans: 2, exp: "보체 활성화 및 Fc 수용체 결합 등 항체의 이펙터 기능(Effector functions)은 Fc 분절인 Heavy chain Constant (CH) region에 의해 매개됩니다." },
+    { id: 27, ch: "Ch 5", type: "mc", q: "Q27. The peptide-binding groove of a Class II Major Histocompatibility Complex (MHC Class II) protein is formed by the interaction of which specific structural domains?", opts: ["The α3 domain and β2-microglobulin", "The α1 domain and β1 domain", "The α1 and α2 domains", "The β1 and β2 domains", "The α2 and β2 domains"], ans: 1, exp: "MHC Class II의 펩타이드 결합 홈(Peptide-binding groove)은 α1 도메인과 β1 도메인의 상호작용으로 형성됩니다." },
+    { id: 28, ch: "Ch 5", type: "mc", q: "Q28. Under what condition do polyvalent soluble antigens and specific antibodies form maximal precipitation and large lattice structures?", opts: ["When antigen is present in extreme excess relative to antibody.", "When antibody is present in extreme excess relative to monovalent antigen.", "When the relative concentrations of polyvalent antigen and antibody are in the Zone of Equivalence.", "When antibodies are cleaved into monovalent Fab fragments.", "When Fc receptors on macrophages are completely blocked."], ans: 2, exp: "다가 항원과 항체의 상대적 농도가 적절한 비율을 이루는 동등대(Zone of Equivalence)에 도달하면 거대 면역 복합체가 형성되어 대량 침전됩니다." },
+    { id: 29, ch: "Ch 1", type: "mc", q: "Q29. What is the foundational premise of the clonal organization of lymphocytes?", opts: ["Every lymphocyte expresses thousands of different antigen receptors with distinct specificities.", "Each lymphocyte clone expresses a unique antigen receptor with a single specificity.", "All lymphocytes in an individual share identical antigen receptors.", "Lymphocyte receptor specificity is altered by the type of pathogen encountered during infection.", "Clones lose their specific antigen receptors upon encountering antigen."], ans: 1, exp: "클론선택설: 각각의 성숙 림프구 클론은 단 한 종류의 고유한 항원 수용체만을 표면에 발현하며 단 하나의 특이성을 가집니다." },
+    { id: 30, ch: "Ch 2", type: "mc", q: "Q30. Which cellular and molecular interactions are essential during embryogenesis for the organogenesis and structural compartmentalization of secondary lymphoid tissues?", opts: ["Erythrocytes and vascular endothelial growth factor (VEGF)", "Lymphoid Tissue Inducer (LTi) cells and Lymphotoxin (LTα1β2) signaling with stromal cells", "Mature plasma cells and high levels of IL-10", "Neutrophils and major basic protein (MBP)", "Eosinophils and histamine receptors"], ans: 1, exp: "태아 발생기 2차 림프기관 형성: LTi 세포 표면의 LTα1β2와 기질세포 LTβR 상호작용 및 케모카인 분비로 완성됩니다." },
+    { id: 31, ch: "Ch 4", type: "mc", q: "Q31. Why are pathogens evolutionarily constrained from mutating Pathogen-Associated Molecular Patterns (PAMPs) to evade innate immune recognition?", opts: ["PAMPs are non-essential metabolic byproducts that microbes discard during infection.", "PAMPs are structural components essential for the survival, integrity, or infectivity of the microbe.", "PAMPs are encoded by host-genome DNA transferred via horizontal gene transfer.", "PAMPs undergo rapid somatic hypermutation matching host PRRs.", "PRRs modify microbial PAMP genes directly upon contact."], ans: 1, exp: "PAMPs는 미생물의 생존 및 감염력 유지에 돌이킬 수 없이 필수적인 구조이므로 변이를 통한 면역 회피가 진화적으로 엄격히 제한됩니다." },
+    { id: 32, ch: "Ch 5", type: "mc", q: "Q32. Which experimental technique involves separating proteins by size via SDS-PAGE, transferring them to a membrane (PVDF/Nitrocellulose), and detecting target proteins using specific antibodies?", opts: ["Flow Cytometry", "Enzyme-Linked Immunosorbent Assay (ELISA)", "Western Blotting", "Immunohistochemistry", "Polymerase Chain Reaction (PCR)"], ans: 2, exp: "단백질 크기별 분리(SDS-PAGE) → 멤브레인 전이 → 항체 탐지 과정으로 구성된 기법은 Western Blotting입니다." },
+
+    // Part II. True or False Questions (Q33 ~ Q38)
+    { id: 33, ch: "Ch 4", type: "tf", q: "Q33 (T/F 1). RIG-like Receptors (RLRs), such as RIG-I and MDA5, function primarily as cytosolic sensors that recognize viral double-stranded and single-stranded DNA.", opts: ["True", "False"], ans: 1, exp: "False. RLRs(RIG-I, MDA5)는 세포질 내 바이러스 RNA를 전문적으로 감지합니다." },
+    { id: 34, ch: "Ch 2", type: "tf", q: "Q34 (T/F 2). Fibroblastic Reticular Cells (FRCs) in the lymph node paracortex form specialized conduit systems that display chemokines CCL19 and CCL21 to guide the migration of T cells and dendritic cells.", opts: ["True", "False"], ans: 0, exp: "True. FRC는 림프절 부피질에서 도관(Conduits) 망을 형성하고 CCL19/CCL21을 제시하여 Naive T 세포와 DC의 가이드 역할을 수행합니다." },
+    { id: 35, ch: "Ch 4", type: "tf", q: "Q35 (T/F 3). NOD-like Receptors (NLRs), particularly NLRP3, respond to intracellular microbial products and cellular distress signals by assembling inflammasomes that activate Caspase-1 to cleave pro-IL-1β into active IL-1β.", opts: ["True", "False"], ans: 0, exp: "True. NLRP3는 세포질 내 DAMPs 감지 시 Inflammasome을 형성하여 Caspase-1 활성화 및 IL-1β 분비를 유도합니다." },
+    { id: 36, ch: "Ch 4", type: "tf", q: "Q36 (T/F 4). Downstream PRR signaling pathways diverge such that activation of NF-κB drives the expression of pro-inflammatory cytokines (e.g., TNF, IL-1), whereas activation of Interferon Regulatory Factors (IRFs) drives the expression of Type I Interferons.", opts: ["True", "False"], ans: 0, exp: "True. NF-κB 경로는 염증성 사이토카인(TNF, IL-1 등)을, IRF 경로는 Type I IFN(IFN-α/β) 생성을 주도합니다." },
+    { id: 37, ch: "Ch 1", type: "tf", q: "Q37 (T/F 5). The complement fragment C3d, generated via complement activation pathways, binds to the CR2 (CD21) co-receptor on B cells, providing a critical 'second signal' that markedly enhances BCR-mediated B cell activation.", opts: ["True", "False"], ans: 0, exp: "True. 보체 조각 C3d는 B 세포의 CR2(CD21) 공수용체에 결합하여 B 세포 활성화를 폭발적으로 강화하는 결정적인 2차 자극 신호로 작용합니다." },
+    { id: 38, ch: "Ch 5", type: "tf", q: "Q38 (T/F 6). Point mutations introduced into the variable (V) regions of antibody genes during somatic hypermutation in germinal centers, followed by selection on follicular dendritic cells, mediate the process of affinity maturation.", opts: ["True", "False"], ans: 0, exp: "True. 체세포 과변이(Somatic hypermutation)로 유발된 점변이와 FDC 상에서의 선택 과정을 통해 친화도 성숙(Affinity maturation)이 일어납니다." },
+
+    // Part III. Short Answer Questions (Q39 ~ Q43)
+    { id: 39, ch: "Ch 5", type: "sa", q: "Q39 (Short Answer 1). Identify the specialized receptor that binds IgG within acidic endosomes to prevent its lysosomal degradation, thereby prolonging the serum half-life of IgG and facilitating maternal IgG transport across placental and neonatal intestinal barriers.", ans: ["FcRn", "Neonatal Fc Receptor"], exp: "엔도좀 내 산성 pH 조건에서 IgG와 결합하여 리소좀 분해를 막고 반감기를 3주로 연장시키는 수용체는 FcRn (Neonatal Fc Receptor)입니다." },
+    { id: 40, ch: "Ch 5", type: "sa", q: "Q40 (Short Answer 2). Name the homogeneous antibody population derived from a single B cell clone (typically produced via hybridoma technology) that specifically recognizes a single unique antigenic epitope.", ans: ["Monoclonal antibody", "Monoclonal antibodies", "단일클론항체"], exp: "단일 B 세포 클론(하이브리도마) 유래의 단일 항원 결정기만을 특이적으로 인지하는 항체는 Monoclonal antibody입니다." },
+    { id: 41, ch: "Ch 4", type: "sa", q: "Q41 (Short Answer 3). Name the class of cytokines (comprising IFN-α and IFN-β) induced downstream of IRF activation that binds to uninfected neighboring cells to induce an 'anti-viral state' by inhibiting viral protein synthesis and degrading viral RNA.", ans: ["Type I Interferon", "Type I IFN", "Type 1 Interferon", "Type 1 IFN"], exp: "IRF 하류에서 유도되어 주변 세포에 항바이러스 상태(Anti-viral state)를 형성하는 사이토카인은 Type I Interferon입니다." },
+    { id: 42, ch: "Ch 4", type: "sa", q: "Q42 (Short Answer 4). Name the small, cationic, cysteine-rich antimicrobial peptides produced by mucosal epithelial cells and neutrophils that insert into and disrupt negatively charged microbial cell membranes.", ans: ["Defensin", "Defensins", "디펜신"], exp: "양전하성 소형 항균 펩타이드로 세균 세포막에 구멍을 뚫어 파열시키는 물질은 Defensin(디펜신)입니다." },
+    { id: 43, ch: "Ch 3", type: "sa", q: "Q43 (Short Answer 5). What specific family of cell surface adhesion molecules serves as the primary molecular target when designing drugs to strictly block the transition of leukocytes from rolling to firm adhesion during inflammatory extravasation?", ans: ["Integrin", "Integrins", "인테그린"], exp: "Rolling에서 Firm adhesion으로의 전환을 억제하는 주된 표적 부착 분자 패밀리는 Integrins(인테그린)입니다." }
+];
+
+let activeQuestions = [];
+let userResults = [];
+
+function startExam(mode) {
+    if (mode === 'all') {
+        activeQuestions = [...quizData];
+    } else {
+        activeQuestions = quizData.filter(q => q.ch === mode);
+    }
+
+    document.getElementById('start-section').style.display = 'none';
+    document.getElementById('result-section').style.display = 'none';
+    document.getElementById('exam-form').style.display = 'block';
+
+    renderExam();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function resetToStart() {
+    document.getElementById('exam-form').style.display = 'none';
+    document.getElementById('result-section').style.display = 'none';
+    document.getElementById('start-section').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderExam() {
+    const container = document.getElementById('questions-container');
+    if (!container) return;
+    
+    container.innerHTML = activeQuestions.map((q, idx) => {
+        let inputHtml = '';
+        if (q.type === 'mc' || q.type === 'tf') {
+            inputHtml = `<div class="options">
+                ${q.opts.map((opt, oIdx) => `
+                    <label class="option-label">
+                        <input type="radio" name="q_${q.id}" value="${oIdx}">
+                        <span>${opt}</span>
+                    </label>
+                `).join('')}
+            </div>`;
+        } else if (q.type === 'sa') {
+            inputHtml = `<input type="text" class="input-sa" name="q_${q.id}" placeholder="정확한 영문 단어를 입력하세요 (예: TLR4)">`;
+        }
+
+        return `
+            <div class="card" id="card_q_${q.id}">
+                <div class="q-header">
+                    <span class="q-tag">${q.ch}</span>
+                    <span style="font-size:0.8rem; color:var(--text-muted);">문항 ${idx + 1} / ${activeQuestions.length}</span>
+                </div>
+                <div class="q-title">${q.q}</div>
+                ${inputHtml}
+            </div>
+        `;
+    }).join('');
+}
+
+function gradeExam() {
+    let totalCorrect = 0;
+    const chStats = { "Ch 1": { c: 0, t: 0 }, "Ch 2": { c: 0, t: 0 }, "Ch 3": { c: 0, t: 0 }, "Ch 4": { c: 0, t: 0 }, "Ch 5": { c: 0, t: 0 } };
+    userResults = [];
+
+    activeQuestions.forEach((q) => {
+        if (!chStats[q.ch]) chStats[q.ch] = { c: 0, t: 0 };
+        chStats[q.ch].t += 1;
+        
+        let isCorrect = false;
+        let userAnsText = "미응답";
+
+        if (q.type === 'mc' || q.type === 'tf') {
+            const selected = document.querySelector(`input[name="q_${q.id}"]:checked`);
+            if (selected) {
+                const val = parseInt(selected.value);
+                userAnsText = q.opts[val];
+                if (val === q.ans) isCorrect = true;
+            }
+        } else if (q.type === 'sa') {
+            const input = document.querySelector(`input[name="q_${q.id}"]`);
+            if (input && input.value.trim() !== '') {
+                userAnsText = input.value.trim();
+                const cleanInput = userAnsText.toLowerCase();
+                isCorrect = q.ans.some(a => a.toLowerCase() === cleanInput);
+            }
+        }
+
+        if (isCorrect) {
+            totalCorrect += 1;
+            chStats[q.ch].c += 1;
+        }
+
+        userResults.push({
+            q: q,
+            isCorrect: isCorrect,
+            userAnsText: userAnsText,
+            correctAnsText: (q.type === 'sa') ? q.ans.join(' 또는 ') : q.opts[q.ans]
+        });
+    });
+
+    const score = Math.round((totalCorrect / activeQuestions.length) * 100);
+    document.getElementById('total-score').innerText = `${score} / 100점 (${totalCorrect}/${activeQuestions.length} 개 맞춤)`;
+    
+    const passStatus = document.getElementById('pass-status');
+    if (score >= 90) { 
+        passStatus.innerText = "🎉 축하합니다! A+ 수준의 완벽한 이해도입니다."; 
+        passStatus.style.color = "var(--success)";
+        triggerPikminEasterEgg();
+    } else if (score >= 75) { 
+        passStatus.innerText = "👍 안정적인 합격권입니다. 틀린 문항을 복습하세요."; 
+        passStatus.style.color = "var(--primary)"; 
+    } else { 
+        passStatus.innerText = "⚠️ 취약 단원 보충이 필요합니다. 아래 해설을 정독하세요."; 
+        passStatus.style.color = "var(--warning)"; 
+    }
+
+    const analysisContainer = document.getElementById('chapter-analysis');
+    analysisContainer.innerHTML = Object.keys(chStats).filter(ch => chStats[ch].t > 0).map(ch => {
+        const stat = chStats[ch];
+        const pct = Math.round((stat.c / stat.t) * 100);
+        const isWeak = pct < 70;
+        return `
+            <div class="ch-card ${isWeak ? 'weak' : ''}">
+                <div class="ch-name">${ch}</div>
+                <div class="ch-score" style="color: ${isWeak ? 'var(--error)' : 'var(--success)'}">${pct}%</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">${stat.c} / ${stat.t} 문항</div>
+                ${isWeak ? '<div style="font-size:0.7rem; color:var(--error); font-weight:bold; margin-top:2px;">⚠️ 집중 보충 필요</div>' : ''}
+            </div>
+        `;
+    }).join('');
+
+    const wrongCount = activeQuestions.length - totalCorrect;
+    document.getElementById('tab-all').innerText = `전체 보기 (${activeQuestions.length})`;
+    document.getElementById('tab-wrong').innerText = `오답 보기 (${wrongCount})`;
+    document.getElementById('tab-correct').innerText = `정답 보기 (${totalCorrect})`;
+
+    filterReview('all');
+
+    document.getElementById('exam-form').style.display = 'none';
+    document.getElementById('result-section').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function filterReview(type) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(`tab-${type}`).classList.add('active');
+
+    const container = document.getElementById('review-questions-container');
+    const filtered = userResults.filter(item => {
+        if (type === 'wrong') return !item.isCorrect;
+        if (type === 'correct') return item.isCorrect;
+        return true;
+    });
+
+    if (filtered.length === 0) {
+        container.innerHTML = `<div class="card" style="text-align:center; padding:20px; color:var(--text-muted);">해당 문항이 없습니다.</div>`;
+        return;
+    }
+
+    container.innerHTML = filtered.map(item => `
+        <div class="card" style="border-left: 5px solid ${item.isCorrect ? 'var(--success)' : 'var(--error)'}">
+            <div class="q-header">
+                <span class="q-tag">${item.q.ch}</span>
+                <span class="status-badge ${item.isCorrect ? 'status-correct' : 'status-wrong'}">
+                    ${item.isCorrect ? '정답 ✅' : '오답 ❌'}
+                </span>
+            </div>
+            <div class="q-title">${item.q.q}</div>
+            <p style="margin-top: 6px; font-size: 0.9rem;">
+                <strong>제출한 답:</strong> 
+                <span style="color:${item.isCorrect ? 'var(--success)' : 'var(--error)'}; font-weight:600;">${item.userAnsText}</span>
+            </p>
+            ${!item.isCorrect ? `<p style="font-size: 0.9rem; margin-top: 2px;">✅ <strong>정답:</strong> <span style="color:var(--success); font-weight:700;">${item.correctAnsText}</span></p>` : ''}
+            <div class="explanation-box">
+                <strong>💡 정밀 해설:</strong> ${item.q.exp}
+            </div>
+        </div>
+    `).join('');
+}
+
+function copyGeminiPrompt() {
+    const wrongList = userResults.filter(item => !item.isCorrect);
+
+    if (wrongList.length === 0) {
+        alert("🎉 틀린 문제가 없습니다! 완벽합니다.");
+        return;
+    }
+
+    let promptText = `[면역학 중간고사 오답 분석 및 1:1 맞춤 튜터링 요청]\n\n`;
+    promptText += `안녕하세요 Gemini! 방금 면역학 정밀 모의고사를 풀었습니다.\n`;
+    promptText += `- 최종 점수: ${document.getElementById('total-score').innerText}\n\n`;
+    promptText += `다음은 제가 틀린 ${wrongList.length}개 문항 목록과 제출한 답입니다:\n\n`;
+
+    wrongList.forEach((item, idx) => {
+        promptText += `${idx + 1}. [${item.q.ch}] 문항 ${item.q.id}\n`;
+        promptText += `   - 문제: ${item.q.q}\n`;
+        promptText += `   - 내가 제출한 답: ${item.userAnsText}\n`;
+        promptText += `   - 정답: ${item.correctAnsText}\n`;
+        promptText += `   - 기본 해설: ${item.q.exp}\n\n`;
+    });
+
+    promptText += `--------------------------------------------------\n`;
+    promptText += `위 오답 내역을 바탕으로 다음 3가지를 분석해 주세요:\n`;
+    promptText += `1. 내가 제출한 오답을 왜 헷갈렸을지 면역학적 오개념 교정\n`;
+    promptText += `2. 가장 취약한 단원의 핵심 분자·세포학적 기작 요약\n`;
+    promptText += `3. 내가 약한 파트를 완벽히 대비할 수 있는 유사 난이도 영문 변형 문제 3문항과 정답/해설 제공`;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(promptText).then(() => {
+            alert("📋 Gemini용 오답 분석 프롬프트가 클립보드에 복사되었습니다!\nGemini 대화창에 바로 붙여넣기하세요.");
+        }).catch(() => {
+            fallbackCopyText(promptText);
+        });
+    } else {
+        fallbackCopyText(promptText);
+    }
+}
+
+function fallbackCopyText(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-9999px";
+    textArea.style.top = "-9999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+        document.execCommand('copy');
+        alert("📋 Gemini용 오답 분석 프롬프트가 클립보드에 복사되었습니다!\nGemini 대화창에 바로 붙여넣기하세요.");
+    } catch (err) {
+        alert("복사 실패: 수동으로 오답 내역을 복사해 주세요.");
+    }
+    document.body.removeChild(textArea);
+}
+
+function triggerPikminEasterEgg() {
+    const container = document.getElementById('pikmin-container');
+    const colors = [
+        { name: "red", body: "#ef4444", text: "A+ 가자! 🔴" },
+        { name: "yellow", body: "#eab308", text: "면역학 파이팅! 🟡" },
+        { name: "blue", body: "#3b82f6", text: "부산대 약대! 🔵" },
+        { name: "white", body: "#f8fafc", text: "피크민의 응원! ⚪" }
+    ];
+
+    for (let i = 0; i < 5; i++) {
+        setTimeout(() => {
+            const pik = colors[Math.floor(Math.random() * colors.length)];
+            const el = document.createElement('div');
+            el.className = 'pikmin';
+            el.style.left = `${Math.random() * 60 + 10}%`;
+            el.style.animationDuration = `${4 + Math.random() * 3}s`;
+
+            el.innerHTML = `
+                <div class="pikmin-bubble">${pik.text}</div>
+                <svg viewBox="0 0 100 140" width="50" height="70">
+                    <line x1="50" y1="50" x2="50" y2="15" stroke="#15803d" stroke-width="4"/>
+                    <ellipse cx="50" cy="10" rx="12" ry="6" fill="#22c55e" transform="rotate(-15 50 10)"/>
+                    <ellipse cx="50" cy="75" rx="18" ry="25" fill="${pik.body}"/>
+                    <circle cx="43" cy="65" r="5" fill="white"/>
+                    <circle cx="43" cy="65" r="2" fill="black"/>
+                    <circle cx="57" cy="65" r="5" fill="white"/>
+                    <circle cx="57" cy="65" r="2" fill="black"/>
+                    ${pik.name === 'red' ? '<polygon points="50,68 50,76 60,72" fill="#dc2626"/>' : ''}
+                    ${pik.name === 'yellow' ? '<path d="M 32 70 Q 15 50 25 75 Z" fill="#eab308"/><path d="M 68 70 Q 85 50 75 75 Z" fill="#eab308"/>' : ''}
+                    <line x1="42" y1="98" x2="38" y2="115" stroke="${pik.body}" stroke-width="5" stroke-linecap="round"/>
+                    <line x1="58" y1="98" x2="62" y2="115" stroke="${pik.body}" stroke-width="5" stroke-linecap="round"/>
+                </svg>
+            `;
+
+            container.appendChild(el);
+
+            setTimeout(() => { el.remove(); }, 7000);
+        }, i * 600);
+    }
+}
+</script>
+</body>
+</html>
